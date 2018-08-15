@@ -1,82 +1,121 @@
 package com.pinyougou.sellergoods.service.impl;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
 import com.pinyougou.mapper.TbBrandMapper;
 import com.pinyougou.pojo.TbBrand;
 import com.pinyougou.pojo.TbBrandExample;
+import com.pinyougou.pojo.TbBrandExample.Criteria;
 import com.pinyougou.sellergoods.service.BrandService;
+
 import entity.PageResult;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.Arrays;
-import java.util.List;
-
+/**
+ * 服务实现层
+ * @author Administrator
+ *
+ */
 @Service
 public class BrandServiceImpl implements BrandService {
-    @Autowired
-    private TbBrandMapper brandMapper;
+
+	@Autowired
+	private TbBrandMapper brandMapper;
+	
+	/**
+	 * 查询全部
+	 */
+	@Override
+	public List<TbBrand> findAll() {
+		return brandMapper.selectByExample(null);
+	}
+
+	/**
+	 * 按分页查询
+	 */
+	@Override
+	public PageResult findPage(int pageNum, int pageSize) {
+		PageHelper.startPage(pageNum, pageSize);		
+		Page<TbBrand> page=   (Page<TbBrand>) brandMapper.selectByExample(null);
+		return new PageResult(page.getTotal(), page.getResult());
+	}
+
+	/**
+	 * 增加
+	 */
+	@Override
+	public void add(TbBrand brand) {
+		brandMapper.insert(brand);		
+	}
+
+	
+	/**
+	 * 修改
+	 */
+	@Override
+	public void update(TbBrand brand){
+		brandMapper.updateByPrimaryKey(brand);
+	}	
+	
+	/**
+	 * 根据ID获取实体
+	 * @param id
+	 * @return
+	 */
+	@Override
+	public TbBrand findOne(Long id){
+		return brandMapper.selectByPrimaryKey(id);
+	}
+
+	/**
+	 * 批量删除
+	 */
+	@Override
+	public void delete(Long[] ids) {
+		for(Long id:ids){
+			brandMapper.deleteByPrimaryKey(id);
+		}		
+	}
+	
+	
+		@Override
+	public PageResult findPage(TbBrand brand, int pageNum, int pageSize) {
+		PageHelper.startPage(pageNum, pageSize);
+		
+		TbBrandExample example=new TbBrandExample();
+		Criteria criteria = example.createCriteria();
+		
+		if(brand!=null){			
+						if(brand.getName()!=null && brand.getName().length()>0){
+				criteria.andNameLike("%"+brand.getName()+"%");
+			}
+			if(brand.getFirstChar()!=null && brand.getFirstChar().length()>0){
+				criteria.andFirstCharLike("%"+brand.getFirstChar()+"%");
+			}
+	
+		}
+		
+		Page<TbBrand> page= (Page<TbBrand>)brandMapper.selectByExample(example);		
+		return new PageResult(page.getTotal(), page.getResult());
+	}
 
     @Override
-    public List<TbBrand> findAll() {
-        return brandMapper.selectByExample(null);
+    public List<Map> findBrandList() {
+		List<Map> mapList = new ArrayList<>();
+		List<TbBrand> brandList = brandMapper.selectByExample(null);
+
+		for (TbBrand tbBrand : brandList) {
+			Map map = new HashMap();//pojo
+			map.put("id",tbBrand.getId());
+			map.put("text",tbBrand.getName());
+			mapList.add(map);
+		}
+		return mapList;
     }
 
-    @Override
-    public PageResult findPage(int pageNum, int pageSize) {
-        PageResult result = new PageResult();
-        PageHelper.startPage(pageNum,pageSize);
-        List<TbBrand> brandList = brandMapper.selectByExample(null);
-        PageInfo pageInfo = new PageInfo<>(brandList,pageSize);
-        result.setRows(pageInfo.getList());
-        result.setTotal(pageInfo.getTotal());
-        return result;
-    }
-
-    @Override
-    public void add(TbBrand brand) {
-        brandMapper.insert(brand);
-    }
-
-    @Override
-    public void update(TbBrand brand) {
-        brandMapper.updateByPrimaryKeySelective(brand);
-    }
-
-    @Override
-    public TbBrand findOne(Long id) {
-        return brandMapper.selectByPrimaryKey(id);
-    }
-
-    @Override
-    public void delete(Long[] ids) {
-        TbBrandExample example = new TbBrandExample();
-        TbBrandExample.Criteria criteria = example.createCriteria();
-        criteria.andIdIn(Arrays.asList(ids));
-        brandMapper.deleteByExample(example);
-    }
-
-    @Override
-    public PageResult search(int pageNum, int pageSize, TbBrand brand) {
-        PageResult result = new PageResult();
-        //设置查询条件
-        TbBrandExample example = new TbBrandExample();
-        if(brand != null){
-            TbBrandExample.Criteria criteria = example.createCriteria();
-            if(StringUtils.isNotBlank(brand.getName())){
-                criteria.andNameLike("%"+brand.getName()+"%");
-            }
-            if(StringUtils.isNotBlank(brand.getFirstChar())){
-                criteria.andFirstCharEqualTo(brand.getFirstChar());
-            }
-        }
-        PageHelper.startPage(pageNum,pageSize);
-        Page<TbBrand> brandList = (Page<TbBrand>) brandMapper.selectByExample(example);
-        result.setTotal(brandList.getTotal());
-        result.setRows(brandList.getResult());
-        return result;
-    }
 }
