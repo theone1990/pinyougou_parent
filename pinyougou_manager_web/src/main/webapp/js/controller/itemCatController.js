@@ -1,5 +1,5 @@
  //控制层 
-app.controller('itemCatController' ,function($scope,$controller   ,itemCatService){	
+app.controller('itemCatController' ,function($scope,$controller,itemCatService){
 	
 	$controller('baseController',{$scope:$scope});//继承
 	
@@ -37,13 +37,14 @@ app.controller('itemCatController' ,function($scope,$controller   ,itemCatServic
 		if($scope.entity.id!=null){//如果有ID
 			serviceObject=itemCatService.update( $scope.entity ); //修改  
 		}else{
+			$scope.entity.parentId=$scope.parentId;
 			serviceObject=itemCatService.add( $scope.entity  );//增加 
 		}				
 		serviceObject.success(
 			function(response){
 				if(response.success){
 					//重新查询 
-		        	$scope.reloadList();//重新加载
+		        	$scope.findByParentId($scope.parentId);
 				}else{
 					alert(response.message);
 				}
@@ -75,5 +76,36 @@ app.controller('itemCatController' ,function($scope,$controller   ,itemCatServic
 			}			
 		);
 	}
-    
+
+	//根据上级id显示下级列表
+	$scope.findByParentId=function (parentId) {
+		itemCatService.findByParentId(parentId).success(
+			function (response) {
+				$scope.list=response;
+            }
+		)
+    }
+
+    $scope.grade=1;//默认为一级
+	//设置级别
+	$scope.setGrade=function (value) {
+		$scope.grade=value;
+    }
+    //读取列表
+	$scope.selectList=function (p_entity) {
+		if($scope.grade==1){
+			$scope.entity_1=null;
+			$scope.entity_2=null;
+		}
+        if($scope.grade==2){
+            $scope.entity_1=p_entity;
+            $scope.entity_2=null;
+        }
+        if($scope.grade==3){
+            $scope.entity_2=p_entity;
+        }
+        //查询此级的下级列表
+		$scope.findByParentId(p_entity.id);
+    }
+
 });	

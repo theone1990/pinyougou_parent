@@ -1,5 +1,5 @@
  //控制层 
-app.controller('goodsController' ,function($scope,$controller   ,goodsService){	
+app.controller('goodsController' ,function($scope,$controller,goodsService,uploadService){
 	
 	$controller('baseController',{$scope:$scope});//继承
 	
@@ -32,26 +32,44 @@ app.controller('goodsController' ,function($scope,$controller   ,goodsService){
 	}
 	
 	//保存 
-	$scope.save=function(){				
-		var serviceObject;//服务层对象  				
-		if($scope.entity.id!=null){//如果有ID
-			serviceObject=goodsService.update( $scope.entity ); //修改  
-		}else{
-			serviceObject=goodsService.add( $scope.entity  );//增加 
-		}				
-		serviceObject.success(
+	$scope.add=function(){
+		//先取出富文本编辑器中的内容,赋值给变量
+		var htmltext = editor.html();
+		$scope.entity.goodsDesc.introduction=htmltext;
+        goodsService.add( $scope.entity  ).success(
 			function(response){
-				if(response.success){
-					//重新查询 
-		        	$scope.reloadList();//重新加载
-				}else{
-					alert(response.message);
-				}
+                alert(response.message);
+                $scope.entity={};
+                editor.html('');//清空富文本编辑器
 			}		
 		);				
 	}
-	
-	 
+
+	//上传图片
+	$scope.uploadFile=function () {
+		uploadService.uploadFile().success(
+			function (response) {
+				if(response.success){
+					//上传成功, 取出url, 设置文件地址
+					$scope.image_entity.url=response.message;
+				}else{
+					alert(response.message);
+				}
+            }
+		)
+    }
+
+    //添加图片列表
+	$scope.entity={goods:{},goodsDesc:{itemImages:[]}};
+	$scope.add_image_entity=function () {
+		$scope.entity.goodsDesc.itemImages.push($scope.image_entity);
+    }
+
+    //列表中移除图片
+	$scope.remove_image_entity=function (index) {
+        $scope.entity.goodsDesc.itemImages.splice(index,1);
+    }
+
 	//批量删除 
 	$scope.dele=function(){			
 		//获取选中的复选框			
@@ -75,5 +93,5 @@ app.controller('goodsController' ,function($scope,$controller   ,goodsService){
 			}			
 		);
 	}
-    
+
 });	

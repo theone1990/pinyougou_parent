@@ -35,7 +35,7 @@
     <dubbo:registry address="zookeeper://192.168.25.133:2181"/>
     <dubbo:reference id="sellerService" interface="com.pinyougou.sellergoods.service.SellerService"></dubbo:reference>
     <!--自定义认证类-->
-    <beans:bean id="userDetailService" class="com.pinyougou.service.UserDetailServiceImpl">
+    <beans:bean id="userDetailService" class="com.pinyougou.shop.service.UserDetailServiceImpl">
         <beans:property name="sellerService" ref="sellerService"></beans:property>
     </beans:bean>
     <!--认证管理器-->
