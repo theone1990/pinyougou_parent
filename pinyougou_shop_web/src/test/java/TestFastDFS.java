@@ -22,4 +22,20 @@ public class TestFastDFS {
             System.out.println(string);
         }
     }
+
+    //测试删除图片
+    @Test
+    public void delete(){
+        try {
+            ClientGlobal.init("F:\\IdeaProject\\pinyougou_parent\\pinyougou_shop_web\\src\\main\\resources\\config\\fastdfs_client.conf");
+            TrackerClient trackerClient = new TrackerClient();
+            TrackerServer trackerServer = trackerClient.getConnection();
+            StorageServer storageServer = null;
+            StorageClient storageClient = new StorageClient(trackerServer,storageServer);
+            int i = storageClient.delete_file("group1", "M00/00/00/wKgZhVt6xJOAFqCFAAO0Cx4-A-I120.jpg");
+            System.out.println(i==0 ? "删除成功" : "删除失败"+i);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

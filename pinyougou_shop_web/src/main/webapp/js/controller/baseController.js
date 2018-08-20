@@ -42,4 +42,15 @@ app.controller('baseController' ,function($scope){
 		}
 		return value;
     }
+
+    //从集合中根据key查询对象
+	$scope.searchObjectByKey =function (list, key, keyValue) {
+		for(var i=0;i<list.length;i++){
+			var object = list[i];
+			if(object[key]==keyValue){
+				return object;
+			}
+		}
+		return null;
+    }
 });	
