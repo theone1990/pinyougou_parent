@@ -1,4 +1,4 @@
-package com.pinyougou.shop.controller;
+package com.pinyougou.manager.controller;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.pinyougou.pojo.TbGoods;
@@ -120,11 +120,20 @@ public class GoodsController {
 	 */
 	@RequestMapping("/search")
 	public PageResult search(@RequestBody TbGoods goods, int page, int rows  ){
-		//获取商家id
-		String name = SecurityContextHolder.getContext().getAuthentication().getName();
-		//添加查询条件
-		goods.setSellerId(name);
 		return goodsService.findPage(goods, page, rows);
 	}
-	
+
+	/**
+	 * 更新状态
+	 */
+	@RequestMapping("/updateStatus")
+	public Result updateStatus(Long[] ids,String status){
+		try {
+			goodsService.updateStatus(ids, status);
+			return new Result(true,"更新成功");
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Result(false,"更新失败");
+		}
+	}
 }

@@ -1,21 +1,20 @@
 package com.pinyougou.sellergoods.service.impl;
+
+import com.alibaba.dubbo.config.annotation.Service;
+import com.alibaba.fastjson.JSON;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
+import com.pinyougou.mapper.*;
+import com.pinyougou.pojo.*;
+import com.pinyougou.pojo.TbGoodsExample.Criteria;
+import com.pinyougou.pojogroup.Goods;
+import com.pinyougou.sellergoods.service.GoodsService;
+import entity.PageResult;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-import com.pinyougou.mapper.*;
-import com.pinyougou.pojo.*;
-import com.pinyougou.pojogroup.Goods;
-import org.springframework.beans.factory.annotation.Autowired;
-import com.alibaba.dubbo.config.annotation.Service;
-import com.github.pagehelper.Page;
-import com.github.pagehelper.PageHelper;
-import com.pinyougou.pojo.TbGoodsExample.Criteria;
-import com.pinyougou.sellergoods.service.GoodsService;
-
-import entity.PageResult;
 
 /**
  * 服务实现层
@@ -70,6 +69,10 @@ public class GoodsServiceImpl implements GoodsService {
 		goodsDesc.setGoodsId(tbGoods.getId());//设置id
 		//插入商品扩展表
 		goodsDescMapper.insert(goodsDesc);
+		saveItemList(goods);
+	}
+
+	private void saveItemList(Goods goods){
 		//插入商品sku列表
 		if("1".equals(goods.getGoods().getIsEnableSpec())){
 			for (TbItem item : goods.getItemList()) {
@@ -94,7 +97,6 @@ public class GoodsServiceImpl implements GoodsService {
 			setItemValues(goods,item);
 			itemMapper.insert(item);
 		}
-
 	}
 
 	private void setItemValues(Goods goods, TbItem item) {
@@ -124,8 +126,16 @@ public class GoodsServiceImpl implements GoodsService {
 	 * 修改
 	 */
 	@Override
-	public void update(TbGoods goods){
-		goodsMapper.updateByPrimaryKey(goods);
+	public void update(Goods goods){
+		goods.getGoods().setAuditStatus("0");//修改过的商品要重新审核
+		goodsMapper.updateByPrimaryKey(goods.getGoods());//保存商品表
+		goodsDescMapper.updateByPrimaryKey(goods.getGoodsDesc());//保存商品扩展表
+		//删除原来的sku列表
+		TbItemExample example = new TbItemExample();
+		example.createCriteria().andGoodsIdEqualTo(goods.getGoods().getId());
+		itemMapper.deleteByExample(example);
+		//添加新的sku列表
+		saveItemList(goods);
 	}	
 	
 	/**
@@ -134,8 +144,17 @@ public class GoodsServiceImpl implements GoodsService {
 	 * @return
 	 */
 	@Override
-	public TbGoods findOne(Long id){
-		return goodsMapper.selectByPrimaryKey(id);
+	public Goods findOne(Long id){
+		Goods goods = new Goods();
+		TbGoods tbGoods = goodsMapper.selectByPrimaryKey(id);
+		goods.setGoods(tbGoods);
+		TbGoodsDesc tbGoodsDesc = goodsDescMapper.selectByPrimaryKey(id);
+		goods.setGoodsDesc(tbGoodsDesc);
+		TbItemExample example = new TbItemExample();
+		example.createCriteria().andGoodsIdEqualTo(id);
+		List<TbItem> tbItems = itemMapper.selectByExample(example);
+		goods.setItemList(tbItems);
+		return goods;
 	}
 
 	/**
@@ -144,7 +163,9 @@ public class GoodsServiceImpl implements GoodsService {
 	@Override
 	public void delete(Long[] ids) {
 		for(Long id:ids){
-			goodsMapper.deleteByPrimaryKey(id);
+			TbGoods goods = goodsMapper.selectByPrimaryKey(id);
+			goods.setIsDelete(true);
+			goodsMapper.updateByPrimaryKey(goods);
 		}		
 	}
 	
@@ -155,10 +176,10 @@ public class GoodsServiceImpl implements GoodsService {
 		
 		TbGoodsExample example=new TbGoodsExample();
 		Criteria criteria = example.createCriteria();
-		
+		criteria.andIsDeleteEqualTo(false);
 		if(goods!=null){			
-						if(goods.getSellerId()!=null && goods.getSellerId().length()>0){
-				criteria.andSellerIdLike("%"+goods.getSellerId()+"%");
+			if(goods.getSellerId()!=null && goods.getSellerId().length()>0){
+				criteria.andSellerIdEqualTo(goods.getSellerId());
 			}
 			if(goods.getGoodsName()!=null && goods.getGoodsName().length()>0){
 				criteria.andGoodsNameLike("%"+goods.getGoodsName()+"%");
@@ -184,5 +205,14 @@ public class GoodsServiceImpl implements GoodsService {
 		Page<TbGoods> page= (Page<TbGoods>)goodsMapper.selectByExample(example);		
 		return new PageResult(page.getTotal(), page.getResult());
 	}
-	
+
+    @Override
+    public void updateStatus(Long[] ids, String status) {
+		for (Long id : ids) {
+			TbGoods goods = goodsMapper.selectByPrimaryKey(id);
+			goods.setAuditStatus(status);
+			goodsMapper.updateByPrimaryKey(goods);
+		}
+	}
+
 }

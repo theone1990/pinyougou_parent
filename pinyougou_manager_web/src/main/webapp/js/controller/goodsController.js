@@ -63,7 +63,7 @@ app.controller('goodsController' ,function($scope,$controller,$location,goodsSer
     }
 	
 	//保存,修改
-	$scope.save1=function(){
+	$scope.save=function(){
         $scope.entity.goodsDesc.introduction=editor.html();//提取文本编辑器的值
 		var serviceObject;
 		if($scope.entity.goods.id!=null){
@@ -110,7 +110,7 @@ app.controller('goodsController' ,function($scope,$controller,$location,goodsSer
     }
 
 	//批量删除 
-	$scope.dele=function(){			
+	$scope.dele1=function(){
 		//获取选中的复选框			
 		goodsService.dele( $scope.selectIds ).success(
 			function(response){
@@ -184,11 +184,11 @@ app.controller('goodsController' ,function($scope,$controller,$location,goodsSer
 		)
 
 		//查询规格列表
-		typeTemplateService.findSpecList(newValue).success(
+		/*typeTemplateService.findSpecList(newValue).success(
 			function (response) {
 				$scope.specList=response;
             }
-		)
+		)*/
     })
 
 	$scope.updateSpecAttribute=function ($event, name, value) { //name:attributeName(网络), value:attributeValue[3G,4G]
@@ -241,6 +241,20 @@ app.controller('goodsController' ,function($scope,$controller,$location,goodsSer
 			function (response) {
 				for(var i=0;i<response.length;i++){
 					$scope.itemCatList[response[i].id]=response[i].name;
+				}
+            }
+		)
+    }
+
+    //更改状态
+	$scope.updateGoodsStatus=function (status) {
+		goodsService.updateGoodsStatus($scope.selectIds,status).success(
+			function (response) {
+				if(response.success){
+					$scope.reloadList();
+					$scope.selectIds=[];//清空id集合
+				}else{
+					alert(response.message);
 				}
             }
 		)
