@@ -1,16 +1,17 @@
-package com.pinyougou.sellergoods.service.impl;
-import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
+package com.pinyougou.content.service.impl;
+
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.pinyougou.content.service.ContentCategoryService;
 import com.pinyougou.mapper.TbContentCategoryMapper;
 import com.pinyougou.pojo.TbContentCategory;
 import com.pinyougou.pojo.TbContentCategoryExample;
 import com.pinyougou.pojo.TbContentCategoryExample.Criteria;
-import com.pinyougou.sellergoods.service.ContentCategoryService;
-
 import entity.PageResult;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.List;
 
 /**
  * 服务实现层

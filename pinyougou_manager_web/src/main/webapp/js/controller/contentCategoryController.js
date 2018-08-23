@@ -23,7 +23,7 @@ app.controller('contentCategoryController' ,function($scope,$controller   ,conte
 	}
 	
 	//查询实体 
-	$scope.findOne=function(id){				
+	$scope.findOne1=function(id){
 		contentCategoryService.findOne(id).success(
 			function(response){
 				$scope.entity= response;					
@@ -32,7 +32,7 @@ app.controller('contentCategoryController' ,function($scope,$controller   ,conte
 	}
 	
 	//保存 
-	$scope.save=function(){				
+	$scope.save1=function(){
 		var serviceObject;//服务层对象  				
 		if($scope.entity.id!=null){//如果有ID
 			serviceObject=contentCategoryService.update( $scope.entity ); //修改  
@@ -53,7 +53,7 @@ app.controller('contentCategoryController' ,function($scope,$controller   ,conte
 	
 	 
 	//批量删除 
-	$scope.dele=function(){			
+	$scope.dele1=function(){
 		//获取选中的复选框			
 		contentCategoryService.dele( $scope.selectIds ).success(
 			function(response){
