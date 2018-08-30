@@ -26,13 +26,13 @@ public class TestRedisHash {
 
     @Test
     public void getKeys(){
-        Set s = redisTemplate.boundHashOps("namehash").keys();
+        Set s = redisTemplate.boundHashOps("itemCat").keys();
         System.out.println(s);
     }
 
     @Test
     public void getValues(){
-        List list = redisTemplate.boundHashOps("namehash").values();
+        List list = redisTemplate.boundHashOps("categoryList").values();
         System.out.println(list);
     }
 

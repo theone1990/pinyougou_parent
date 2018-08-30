@@ -17,6 +17,7 @@ import com.pinyougou.pojo.TbTypeTemplateExample.Criteria;
 import com.pinyougou.sellergoods.service.TypeTemplateService;
 
 import entity.PageResult;
+import org.springframework.data.redis.core.RedisTemplate;
 
 /**
  * 服务实现层
@@ -31,12 +32,31 @@ public class TypeTemplateServiceImpl implements TypeTemplateService {
 
 	@Autowired
 	private TbSpecificationOptionMapper optionMapper;
+
+	@Autowired
+	private RedisTemplate redisTemplate;
 	/**
 	 * 查询全部
 	 */
 	@Override
 	public List<TbTypeTemplate> findAll() {
 		return typeTemplateMapper.selectByExample(null);
+	}
+
+	/**
+	 * 将数据存入缓存
+	 */
+	private void saveToRedis(){
+		List<TbTypeTemplate> list = findAll();
+		for (TbTypeTemplate typeTemplate : list) {
+			//存储品牌列表
+			List<Map> brandList = JSON.parseArray(typeTemplate.getBrandIds(), Map.class);
+			redisTemplate.boundHashOps("brandList").put(typeTemplate.getId(),brandList);
+			//存储规格列表
+			List<Map> specList = findSpecList(typeTemplate.getId());
+			redisTemplate.boundHashOps("specList").put(typeTemplate.getId(),specList);
+		}
+		System.out.println("更新缓存:品牌和规格表");
 	}
 
 	/**
@@ -95,7 +115,7 @@ public class TypeTemplateServiceImpl implements TypeTemplateService {
 		Criteria criteria = example.createCriteria();
 		
 		if(typeTemplate!=null){			
-						if(typeTemplate.getName()!=null && typeTemplate.getName().length()>0){
+			if(typeTemplate.getName()!=null && typeTemplate.getName().length()>0){
 				criteria.andNameLike("%"+typeTemplate.getName()+"%");
 			}
 			if(typeTemplate.getSpecIds()!=null && typeTemplate.getSpecIds().length()>0){
@@ -110,7 +130,8 @@ public class TypeTemplateServiceImpl implements TypeTemplateService {
 	
 		}
 		
-		Page<TbTypeTemplate> page= (Page<TbTypeTemplate>)typeTemplateMapper.selectByExample(example);		
+		Page<TbTypeTemplate> page= (Page<TbTypeTemplate>)typeTemplateMapper.selectByExample(example);
+		saveToRedis();//存入数据到缓存
 		return new PageResult(page.getTotal(), page.getResult());
 	}
 
