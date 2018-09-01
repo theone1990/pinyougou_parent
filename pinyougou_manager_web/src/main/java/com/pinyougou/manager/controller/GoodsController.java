@@ -6,11 +6,18 @@ import com.pinyougou.pojogroup.Goods;
 import com.pinyougou.sellergoods.service.GoodsService;
 import entity.PageResult;
 import entity.Result;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jms.core.JmsTemplate;
+import org.springframework.jms.core.MessageCreator;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.jms.Destination;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.Session;
 import java.util.List;
 
 /**
@@ -24,7 +31,11 @@ public class GoodsController {
 
 	@Reference
 	private GoodsService goodsService;
-	
+
+	@Autowired
+	private Destination queueSolrDestination;
+	@Autowired
+	private JmsTemplate jmsTemplate;
 	/**
 	 * 返回全部列表
 	 * @return
@@ -130,6 +141,15 @@ public class GoodsController {
 	public Result updateStatus(Long[] ids,String status){
 		try {
 			goodsService.updateStatus(ids, status);
+			if(status.equals("1")){ //审核通过
+				//发送消息, 消息内容就是id数组
+				jmsTemplate.send(queueSolrDestination, new MessageCreator() {
+					@Override
+					public Message createMessage(Session session) throws JMSException {
+						return session.createObjectMessage(ids);
+					}
+				});
+			}
 			return new Result(true,"更新成功");
 		} catch (Exception e) {
 			e.printStackTrace();

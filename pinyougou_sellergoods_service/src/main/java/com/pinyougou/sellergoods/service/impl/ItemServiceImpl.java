@@ -1,4 +1,5 @@
 package com.pinyougou.sellergoods.service.impl;
+import java.util.Arrays;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.alibaba.dubbo.config.annotation.Service;
@@ -77,9 +78,19 @@ public class ItemServiceImpl implements ItemService {
 			itemMapper.deleteByPrimaryKey(id);
 		}		
 	}
-	
-	
-		@Override
+
+	@Override
+	public List<TbItem> findItemsByIds(Long[] ids) {
+		TbItemExample example = new TbItemExample();
+		Criteria criteria = example.createCriteria();
+		criteria.andGoodsIdIn(Arrays.asList(ids));
+		criteria.andStatusEqualTo("1");
+		List<TbItem> itemList = itemMapper.selectByExample(example);
+		return itemList;
+	}
+
+
+	@Override
 	public PageResult findPage(TbItem item, int pageNum, int pageSize) {
 		PageHelper.startPage(pageNum, pageSize);
 		

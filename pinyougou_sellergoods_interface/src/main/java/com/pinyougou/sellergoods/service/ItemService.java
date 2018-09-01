@@ -29,7 +29,6 @@ public interface ItemService {
 	*/
 	public void add(TbItem item);
 	
-	
 	/**
 	 * 修改
 	 */
@@ -49,6 +48,11 @@ public interface ItemService {
 	 * @param ids
 	 */
 	public void delete(Long[] ids);
+
+	/**
+	 * 根据
+	 */
+	public List<TbItem> findItemsByIds(Long[] ids);
 
 	/**
 	 * 分页
