@@ -14,17 +14,16 @@
         <property name="targetConnectionFactory" ref="targetConnectionFactory"/>
     </bean>
 
-    <!-- Spring提供的JMS工具类，它可以进行消息发送等 -->
-    <bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
-        <property name="connectionFactory" ref="connectionFactory"/>
+    <bean id="queuePageDestination" class="org.apache.activemq.command.ActiveMQTopic">
+        <constructor-arg value="gen_html_topic"/>
     </bean>
 
-    <bean id="queueSolrDestination" class="org.apache.activemq.command.ActiveMQQueue">
-        <constructor-arg value="pinyougou_queue_solr"/>
-    </bean>
-
-    <bean id="genHtmlDestination" class="org.apache.activemq.command.ActiveMQTopic">
-        <constructor-arg value="gen_html_topic"></constructor-arg>
+    <bean id="pageListener" class="com.pinyougou.page.listener.GenHtmlListener"></bean>
+    <!--配置监听容器 这个就是一个消费者-->
+    <bean class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+        <property name="connectionFactory" ref="connectionFactory" />
+        <property name="destination" ref="queuePageDestination" />
+        <property name="messageListener" ref="pageListener" />
     </bean>
 
 </beans>

@@ -34,6 +34,10 @@ public class GoodsController {
 
 	@Autowired
 	private Destination queueSolrDestination;
+
+	@Autowired
+	private Destination genHtmlDestination;
+
 	@Autowired
 	private JmsTemplate jmsTemplate;
 	/**
@@ -144,6 +148,14 @@ public class GoodsController {
 			if(status.equals("1")){ //审核通过
 				//发送消息, 消息内容就是id数组
 				jmsTemplate.send(queueSolrDestination, new MessageCreator() {
+					@Override
+					public Message createMessage(Session session) throws JMSException {
+						return session.createObjectMessage(ids);
+					}
+				});
+
+				//发送消息, 生成静态页面
+				jmsTemplate.send(genHtmlDestination, new MessageCreator() {
 					@Override
 					public Message createMessage(Session session) throws JMSException {
 						return session.createObjectMessage(ids);
