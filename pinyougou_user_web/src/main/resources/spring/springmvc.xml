@@ -15,9 +15,9 @@
 
     <context:property-placeholder location="classpath:config/resource.properties"></context:property-placeholder>
     <!--组件扫描, 注解驱动, 视图解析器(JSP 不需要), dubbo-->
-    <dubbo:application name="pinyougou_search_web"></dubbo:application>
+    <dubbo:application name="pinyougou_user_web"></dubbo:application>
     <dubbo:registry address="192.168.25.133:2181" protocol="zookeeper"></dubbo:registry>
-    <dubbo:annotation package="com.pinyougou.search.controller"></dubbo:annotation>
+    <dubbo:annotation package="com.pinyougou.user.controller"></dubbo:annotation>
 
     <!--注解驱动并设置统一日期的输出格式-->
     <mvc:annotation-driven>
